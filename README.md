@@ -28,6 +28,13 @@
 - Embedded the Youtube videp and make it autoplay and mute
 - Add Tailwind classes to containers
 - Build Secondary Component
+- Build Movie Lists
+- Build Movie Card
+- TMDB Image CDN URL
+- Styled the Browse Page
+- usePopularMovies custom hook
+- useUpcomingMovies custom hook
+- useTrendingMovies custom hook
 
 # Features
 
