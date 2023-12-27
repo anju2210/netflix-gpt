@@ -35,6 +35,9 @@
 - usePopularMovies custom hook
 - useUpcomingMovies custom hook
 - useTrendingMovies custom hook
+- GPT Search Page
+- Create GPT Search Bar
+- Add Multi-language feature for GPT Search Page
 
 # Features
 
