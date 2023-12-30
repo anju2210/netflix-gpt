@@ -50,7 +50,7 @@
     - Trailer in background
     - Title and Description
     - Movie Suggestions
-      - Movie lists
+      - Movie Lists
 - NetflixGPT
   - Search Bar
   - Movie Suggestions
