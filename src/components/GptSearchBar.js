@@ -1,11 +1,13 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import lang from "../utils/languageConstants";
 import { useDispatch, useSelector } from "react-redux";
-import openai from "../utils/openai";
 import { API_OPTIONS } from "../utils/constants";
 import { addGptMovieResult } from "../utils/gptSlice";
+import genAI from "../utils/geminiAI";
+import Spinner from "./Spinner";
 
 const GptSearchBar = () => {
+  const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
   const langKey = useSelector((store) => store.config.lang);
   const searchText = useRef(null);
@@ -20,42 +22,39 @@ const GptSearchBar = () => {
     );
 
     const json = await data.json();
-
+    console.log("TMDB", json.results);
     return json.results;
   };
 
   const handleGptSearchClick = async () => {
-    console.log(searchText.current.value);
+    setIsLoading(true);
 
-    const inputValue = searchText?.current?.value?.trim();
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
     const gptQuery =
-      "Act as a Movie Recommendation System and suggest some movies for the query" +
-      inputValue +
-      ". Only give me names of 5 movies, comma separated like the example result given ahead. Example Result: Frozen, Pathaan, Gadar, Twilight, Brahmastra";
-    const gptResults = await openai.chat.completions.create({
-      messages: [{ role: "user", content: gptQuery }],
-      model: "gpt-3.5-turbo",
-    });
+      "Act as a movie recommendation system and suggest movies for the query : " +
+      searchText.current.value +
+      ". Only give me names for 5 movies, comma separated like the example result given ahead. Example Result: Frozen, Lost In Space, Avatar, Welcome, Jawaan";
 
-    if (!gptResults.choices) {
-      //error
-    }
+    const gptResults = await model.generateContent(gptQuery);
+    const response = await gptResults.response.text();
 
-    console.log(gptResults.choices?.[0]?.message?.content);
+    const gptMovies = response.split(",");
 
-    const gptMovies = gptResults.choices?.[0]?.message?.content.split(",");
+    console.log("gpt Movies", gptMovies);
 
     //For each movie search TMDB API
     const promiseArray = gptMovies.map((movie) => searchMovieTMDB(movie));
 
-    const tmdbResults = Promise.all(promiseArray);
+    const tmdbResults = await Promise.all(promiseArray);
 
     console.log(tmdbResults);
 
     dispatch(
       addGptMovieResult({ movieNames: gptMovies, movieResults: tmdbResults })
     );
+
+    setIsLoading(false);
   };
 
   return (
@@ -73,8 +72,9 @@ const GptSearchBar = () => {
         <button
           className="col-span-3 py-2 px-4 m-4 bg-red-700 rounded-lg text-white"
           onClick={handleGptSearchClick}
+          disabled={isLoading}
         >
-          {lang[langKey].search}
+          {isLoading ? <Spinner /> : lang[langKey].search}
         </button>
       </form>
     </div>
